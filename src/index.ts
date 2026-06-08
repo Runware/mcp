@@ -100,19 +100,31 @@ const tools = [
     inputSchema: {
       type: 'object' as const,
       properties: {
-        search: { type: 'string', description: 'Search query to filter models' },
-        architecture: { type: 'string', description: 'Filter by architecture (e.g., "flux", "sdxl")' },
+        search: { type: 'string', description: 'Search query (name, description, or AIR ID)' },
+        category: {
+          type: 'string',
+          enum: [
+            'checkpoint',
+            'lora',
+            'lycoris',
+            'vae',
+            'embeddings',
+          ],
+          description: 'Filter by model category',
+        },
+        type: {
+          type: 'string',
+          enum: ['base', 'inpainting', 'refiner'],
+          description: 'Filter checkpoints by type (only when category=checkpoint)',
+        },
+        architecture: { type: 'string', description: 'Filter by architecture (e.g. "flux-1-dev", "sdxl")' },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Filter by tags',
+        },
       },
-      additionalProperties: {
-        type: [
-          'string',
-          'number',
-          'integer',
-          'boolean',
-          'array',
-          'object',
-        ],
-      },
+      required: ['search'],
     },
   },
   {
@@ -123,24 +135,52 @@ const tools = [
     inputSchema: {
       type: 'object' as const,
       properties: {
-        imageURL: {
+        image: {
           type: 'string',
           description: 'URL, data URI, or base64 of the image to upload',
         },
       },
-      required: ['imageURL'],
+      required: ['image'],
     },
   },
   {
     name: 'model_upload',
-    description: 'Upload a custom AI model to Runware.',
+    description:
+      'Upload a custom AI model to Runware (checkpoint, LoRA, VAE, embeddings, etc.). '
+      + 'Returns the AIR identifier once the upload completes.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        air: { type: 'string', description: 'AIR identifier for the model' },
-        modelURL: { type: 'string', description: 'URL to download the model weights' },
+        category: {
+          type: 'string',
+          enum: [
+            'checkpoint',
+            'lora',
+            'lycoris',
+            'vae',
+            'embeddings',
+          ],
+          description: 'Model category',
+        },
+        architecture: { type: 'string', description: 'Model architecture (e.g. "flux-1-dev", "sdxl")' },
+        format: {
+          type: 'string',
+          enum: ['safetensors'],
+          description: 'Weight file format',
+        },
+        name: { type: 'string', description: 'Display name for the model' },
+        version: { type: 'string', description: 'Model version' },
+        downloadURL: { type: 'string', description: 'URL where the model weights can be downloaded from' },
+        air: { type: 'string', description: 'Optional AIR identifier (format: provider:model@version)' },
       },
-      required: ['air', 'modelURL'],
+      required: [
+        'category',
+        'architecture',
+        'format',
+        'name',
+        'version',
+        'downloadURL',
+      ],
     },
   },
   {
@@ -148,7 +188,18 @@ const tools = [
     description: 'Retrieve Runware account information including balance and usage.',
     inputSchema: {
       type: 'object' as const,
-      properties: { includeCost: { type: 'boolean', description: 'Include cost information' } },
+      properties: {
+        operation: {
+          type: 'string',
+          enum: ['getDetails'],
+          description: 'Which account operation to perform. Currently only "getDetails" is supported.',
+        },
+        includeCost: {
+          type: 'boolean',
+          description: 'Include cost information',
+        },
+      },
+      required: ['operation'],
     },
   },
   {
