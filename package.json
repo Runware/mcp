@@ -1,0 +1,65 @@
+{
+  "name": "@runware/mcp",
+  "version": "1.0.0",
+  "description": "MCP server that gives AI agents (Claude, Cursor, Codex) access to the full Runware API — image, video, audio, text, and 3D generation, upscaling, background removal, and more.",
+  "type": "module",
+  "bin": {
+    "runware-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "bun run clean && tsc",
+    "start": "node dist/index.js",
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.eslint.json",
+    "prepublishOnly": "bun test && bun run build"
+  },
+  "keywords": [
+    "runware",
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "claude",
+    "cursor",
+    "image-generation",
+    "video-generation"
+  ],
+  "author": "Runware",
+  "homepage": "https://runware.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Runware/mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Runware/mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@runware/sdk": "^1.1.0",
+    "ajv": "^8.20.0",
+    "ws": "^8.18.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/node": "^25.7.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
+    "eslint": "^10.3.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
