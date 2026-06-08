@@ -1,16 +1,25 @@
 /**
- * Schema registry — model AIRs and their JSON Schemas, fetched live from
- * `schemas.runware.ai`. Cached in-process for 5 minutes (matches the schemas
- * worker's Cache-Control max-age) so repeat calls within a short window don't
+ * Schema registry — model AIRs and their JSON Schemas, fetched live from the
+ * Runware schemas service. Cached in-process for 5 minutes (matches the
+ * upstream Cache-Control max-age) so repeat calls within a short window don't
  * round-trip.
+ *
+ * Curated model listings (`getAvailableModels`) come from the Runware content
+ * service, which carries the metadata agents need to pick a model
+ * (name, headline, capabilities, pricing).
  */
 
 const SCHEMAS_BASE_URL = 'https://schemas.runware.ai'
+const CONTENT_BASE_URL = 'https://content.runware.ai'
 
 type ModelSchema = Record<string, unknown>
 
-type RegistryPayload = {
-  models: Record<string, { taskType: string, id: string }>
+type CuratedModel = {
+  air: string
+  name: string
+  headline?: string
+  capabilities?: string[]
+  pricingOverview?: string
 }
 
 type ResolvePayload = {
@@ -47,11 +56,25 @@ const cleanSchemaForAgent = (schema: ModelSchema): ModelSchema => {
   return clone
 }
 
-const fetchRegistry = async (): Promise<RegistryPayload | null> => {
+const fetchCuratedModels = async (): Promise<CuratedModel[] | null> => {
   try {
-    const response = await fetch(`${SCHEMAS_BASE_URL}/registry.json`)
+    const response = await fetch(`${CONTENT_BASE_URL}/models`)
     if (!response.ok) { return null }
-    return await response.json() as RegistryPayload
+    const items = await response.json() as Array<Record<string, unknown>>
+    return items
+      .map((model): CuratedModel => {
+        const headline = model.headline as string | undefined
+        const capabilities = model.capabilities as string[] | undefined
+        const pricingOverview = model.pricingOverview as string | undefined
+        return {
+          air: model.air as string,
+          name: model.name as string,
+          ...(headline ? { headline } : {}),
+          ...(capabilities ? { capabilities } : {}),
+          ...(pricingOverview ? { pricingOverview } : {}),
+        }
+      })
+      .filter((m) => (m.air && m.name))
   } catch {
     return null
   }
@@ -68,11 +91,11 @@ const fetchResolve = async (id: string): Promise<ResolvePayload | null> => {
 }
 
 const TTL_MS = 5 * 60 * 1000
-let registryCache: { models: string[], expires: number } | null = null
+let curatedCache: { models: CuratedModel[], expires: number } | null = null
 const schemaCache = new Map<string, { schema: ModelSchema, expires: number }>()
 
 export const clearSchemaCache = (): void => {
-  registryCache = null
+  curatedCache = null
   schemaCache.clear()
 }
 
@@ -90,15 +113,15 @@ export const getModelSchema = async (id: string): Promise<ModelSchema | null> =>
   return schema
 }
 
-export const getAvailableModels = async (): Promise<string[]> => {
-  if (registryCache && Date.now() < registryCache.expires) {
-    return registryCache.models
+export const getAvailableModels = async (): Promise<CuratedModel[]> => {
+  if (curatedCache && Date.now() < curatedCache.expires) {
+    return curatedCache.models
   }
 
-  const registry = await fetchRegistry()
-  if (!registry?.models) { return [] }
+  const models = await fetchCuratedModels()
+  if (!models) { return [] }
 
-  const models = Object.keys(registry.models).sort()
-  registryCache = { models, expires: Date.now() + TTL_MS }
-  return models
+  const sorted = [...models].sort((a, b) => a.name.localeCompare(b.name))
+  curatedCache = { models: sorted, expires: Date.now() + TTL_MS }
+  return sorted
 }

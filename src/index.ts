@@ -93,10 +93,9 @@ const tools = [
   {
     name: 'model_search',
     description:
-      'Search the full Runware model database — including community fine-tunes from Civitai, '
-      + 'custom-trained models, and curated models. Returns model names, AIR identifiers, '
-      + 'architecture, and capabilities. Use this when looking for a specific style, fine-tune, '
-      + 'or non-curated model. For just the curated set, list_models is faster.',
+      'Search Runware\'s community model catalog — Civitai fine-tunes, custom-trained models, '
+      + 'community uploads. Use when the user mentions a specific style, named fine-tune, or '
+      + 'community model. For Runware\'s official, curated integrations, use list_models instead.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -234,10 +233,10 @@ const tools = [
   {
     name: 'list_models',
     description:
-      'List the AIR identifiers of curated models — the canonical, officially supported '
-      + 'set that Runware maintains schemas for. Fast and lightweight, but does NOT include '
-      + 'community fine-tunes. For broader discovery (Civitai uploads, custom-trained models, '
-      + 'specific architectures like Pony or anime variants), use model_search instead.',
+      'List Runware\'s official, curated model integrations. '
+      + 'Call this FIRST when the user asks "what models are available?" or needs a model '
+      + 'for a generic task (image, video, audio, etc.). For community uploads or '
+      + 'Civitai fine-tunes, use model_search instead.',
     inputSchema: {
       type: 'object' as const,
       properties: {},
@@ -298,11 +297,15 @@ const handleToolCall = async (
         const params = args as unknown as Parameters<typeof client.modelSearch>[0]
         const results = await client.modelSearch(params)
         const models = results as Record<string, unknown>[]
-        const formatted = models.map((m) => {
+        const formatted = models.map((model) => {
           const parts: string[] = []
-          if (m.modelName) { parts.push(`Name: ${m.modelName}`) }
-          if (m.air) { parts.push(`AIR: ${m.air}`) }
-          if (m.architecture) { parts.push(`Architecture: ${m.architecture}`) }
+          if (model.name) { parts.push(`Name: ${model.name as string}`) }
+          if (model.air) { parts.push(`AIR: ${model.air as string}`) }
+          if (model.version) { parts.push(`Version: ${model.version as string}`) }
+          if (model.category) { parts.push(`Category: ${model.category as string}`) }
+          if (model.architecture) { parts.push(`Architecture: ${model.architecture as string}`) }
+          const tags = model.tags as string[] | undefined
+          if (tags?.length) { parts.push(`Tags: ${tags.join(', ')}`) }
           return parts.join(' | ')
         })
         return {
@@ -357,7 +360,13 @@ const handleToolCall = async (
 
       case 'list_models': {
         const models = await getAvailableModels()
-        return { content: [{ type: 'text', text: `Available models (${models.length}):\n\n${models.join('\n')}` }] }
+        const formatted = models.map((model) => {
+          const headline = model.headline ? ` — ${model.headline}` : ''
+          const caps = model.capabilities?.length ? ` [${model.capabilities.join(', ')}]` : ''
+          const pricing = model.pricingOverview ? ` — ${model.pricingOverview}` : ''
+          return `${model.name} (${model.air})${headline}${caps}${pricing}`
+        }).join('\n')
+        return { content: [{ type: 'text', text: `Curated models (${models.length}):\n\n${formatted}` }] }
       }
 
       default:

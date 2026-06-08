@@ -59,60 +59,30 @@ Settings → MCP → Add server — same config as above.
 
 Add to your MCP configuration with the same command and env.
 
-## What agents can do
+## How to use it
 
-Once connected, the agent has eight tools:
+Once connected, just talk to your agent. It picks the right tool, picks the right model, and fills in the parameters.
 
-### `run`
+- *"Generate an image of a cat in a forest"*
+- *"What models do you have for video generation?"*
+- *"Upscale https://example.com/photo.jpg by 4x"*
+- *"Show me my account balance"*
+- *"Find me a Civitai LoRA for anime style"*
 
-The main inference tool. Pass a model AIR identifier and task-specific parameters. The task type is resolved automatically from the model.
+The agent figures out which model fits, what parameters to pass, and how to interpret the response. Parameters are validated against each model's schema before submission, so the agent gets fast feedback when it picks wrong values.
 
-```json
-{
-  "model": "runware:400@1",
-  "positivePrompt": "a serene mountain landscape at sunset",
-  "width": 1024,
-  "height": 1024
-}
-```
+## Tools the agent has access to
 
-Supports all Runware task types: image, video, audio, text, 3D, upscaling, background removal, captioning, and more.
+You don't call these directly — the agent does, based on what you ask for.
 
-Parameters are validated against the model's schema before submission. If the agent passes an invalid value (out-of-range, wrong type, missing required field), the tool returns a structured error identifying the bad parameter — no API round-trip wasted.
-
-### `model_schema`
-
-Get the parameter schema for a specific model. **The agent should always call this before using a model for the first time** to discover required and optional parameters.
-
-```json
-{ "model": "runware:400@1" }
-```
-
-Returns the full JSON Schema with property types, descriptions, defaults, and constraints.
-
-### `list_models`
-
-List the AIR identifiers of curated models — the canonical, officially supported set. Fast and lightweight, but does not include community fine-tunes (use `model_search` for those).
-
-### `model_search`
-
-Search the full Runware model database — curated models plus community fine-tunes from Civitai, custom-trained models, etc. Returns names, AIRs, architecture, and capabilities. Use when looking for a specific style, fine-tune, or non-curated model.
-
-### `image_upload`
-
-Upload an image for use as input in subsequent generation tasks. Accepts a URL, data URI, or base64-encoded image. Returns an image UUID.
-
-### `model_upload`
-
-Upload a custom model to Runware. Provide the model AIR and a download URL for the weights.
-
-### `account`
-
-Retrieve account information including balance and usage.
-
-### `get_task_details`
-
-Retrieve the original request and response for a previously executed task. Useful for recovering past results.
+- `run` — execute any Runware inference task (image, video, audio, 3D, upscaling, captioning, etc.) on a given model
+- `model_schema` — fetch the parameter schema for a specific model
+- `list_models` — list Runware's official, curated model integrations
+- `model_search` — search the community model catalog (Civitai fine-tunes, custom uploads)
+- `image_upload` — upload an image to use as input
+- `model_upload` — upload a custom model
+- `account` — retrieve account information including balance and usage
+- `get_task_details` — retrieve the original request and response for a previous task
 
 ## Environment variables
 
