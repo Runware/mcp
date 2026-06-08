@@ -1,6 +1,6 @@
 {
   "name": "@runware/mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MCP server that gives AI agents (Claude, Cursor, Codex) access to the full Runware API — image, video, audio, text, and 3D generation, upscaling, background removal, and more.",
   "type": "module",
   "bin": {
@@ -44,7 +44,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "@runware/sdk": "^1.1.0",
+    "@runware/sdk": "^1.1.1",
     "ajv": "^8.20.0",
     "ws": "^8.18.1",
     "zod": "^4.4.3"
