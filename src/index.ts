@@ -78,7 +78,16 @@ const tools = [
         },
       },
       required: ['model'],
-      additionalProperties: true,
+      additionalProperties: {
+        type: [
+          'string',
+          'number',
+          'integer',
+          'boolean',
+          'array',
+          'object',
+        ],
+      },
     },
   },
   {
@@ -94,7 +103,16 @@ const tools = [
         search: { type: 'string', description: 'Search query to filter models' },
         architecture: { type: 'string', description: 'Filter by architecture (e.g., "flux", "sdxl")' },
       },
-      additionalProperties: true,
+      additionalProperties: {
+        type: [
+          'string',
+          'number',
+          'integer',
+          'boolean',
+          'array',
+          'object',
+        ],
+      },
     },
   },
   {
@@ -176,10 +194,42 @@ const tools = [
   },
 ]
 
+/**
+ * Recursively coerce numeric strings to numbers and "true"/"false" to booleans.
+ * The `run` tool's inputSchema declares only `model` with a type; everything
+ * else comes via `additionalProperties: true`. MCP clients (Claude, Cursor)
+ * serialize untyped props as strings, so "width": 1024 arrives here as "1024"
+ * and the Runware API rejects it. Coerce at the boundary instead of enumerating
+ * every param of every model in the schema. Recurses into nested objects and
+ * arrays so model-specific shapes (e.g. `ipAdapters: [{ strength: "0.5" }]`)
+ * get their inner values coerced too.
+ */
+const coerceTypes = (value: unknown): unknown => {
+  if (typeof value === 'string') {
+    if (/^-?\d+$/.test(value)) { return parseInt(value, 10) }
+    if (/^-?\d+\.\d+$/.test(value)) { return parseFloat(value) }
+    if (value === 'true') { return true }
+    if (value === 'false') { return false }
+    return value
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => coerceTypes(item))
+  }
+  if (value !== null && typeof value === 'object') {
+    const output: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      output[k] = coerceTypes(v)
+    }
+    return output
+  }
+  return value
+}
+
 const handleToolCall = async (
   name: string,
-  args: Record<string, unknown>,
+  rawArgs: Record<string, unknown>,
 ): Promise<ToolResponse> => {
+  const args = coerceTypes(rawArgs) as Record<string, unknown>
   log(`Tool called: ${name}`, args)
 
   try {
