@@ -31,10 +31,10 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import { isRunwareError } from '@runware/sdk'
+import { isRunwareError, type ListModelsOptions } from '@runware/sdk'
 import { getClient, disconnectClient } from './config.js'
 import { formatResults } from './formatters.js'
-import { getModelSchema, getAvailableModels } from './schema-registry.js'
+import { getModelSchema } from './schema-registry.js'
 
 type ToolResponse = {
   content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>
@@ -246,6 +246,78 @@ const tools = [
       + 'Only fall through to model_search if no curated entry matches.',
     inputSchema: {
       type: 'object' as const,
+      properties: {
+        capability: {
+          type: 'string',
+          description:
+            'Optional capability filter (e.g. "io:text-to-image", "op:upscale"). '
+            + 'Use list_capabilities first to discover valid ids.',
+        },
+        category: {
+          type: 'string',
+          enum: ['image',
+            'video',
+            'audio',
+            'text',
+            '3d'],
+          description: 'Optional output-modality filter',
+        },
+        creator: { type: 'string', description: 'Optional creator id filter (e.g. "google", "alibaba")' },
+        search: { type: 'string', description: 'Optional free-text search across name, AIR, creator, capabilities' },
+      },
+    },
+  },
+  {
+    name: 'model_details',
+    description:
+      'Get the full curated metadata for a single Runware model by AIR identifier — '
+      + 'name, headline, description, capabilities, pricing, and creator. Use this '
+      + 'when the user wants more depth on a model already surfaced by list_models, '
+      + 'or to confirm an AIR matches what the user named.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {air: { type: 'string', description: 'Model AIR identifier (e.g. "runware:400@1")' }},
+      required: ['air'],
+    },
+  },
+  {
+    name: 'model_examples',
+    description:
+      'Get sample input/output examples for a curated Runware model. Useful when the '
+      + 'user wants to see what a model produces, or to crib a working request shape '
+      + 'before constructing a run() call.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        air: { type: 'string', description: 'Model AIR identifier' },
+        capability: {
+          type: 'string',
+          description: 'Optional capability filter (e.g. "io:text-to-image")',
+        },
+      },
+      required: ['air'],
+    },
+  },
+  {
+    name: 'model_pricing',
+    description:
+      'Get pricing details for a curated Runware model — overview text plus example '
+      + 'configurations with prices (e.g. "1024×1024 = $0.0032"). Use this when the '
+      + 'user asks how much a specific model will cost.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {air: { type: 'string', description: 'Model AIR identifier' }},
+      required: ['air'],
+    },
+  },
+  {
+    name: 'list_capabilities',
+    description:
+      'List every model capability Runware supports, with their human-readable labels. '
+      + 'Use this to discover the taxonomy (e.g. "io:text-to-image", "op:upscale") '
+      + 'before filtering list_models by capability, or to answer "what can Runware do?".',
+    inputSchema: {
+      type: 'object' as const,
       properties: {},
     },
   },
@@ -367,7 +439,19 @@ const handleToolCall = async (
       }
 
       case 'list_models': {
-        const models = await getAvailableModels()
+        // Pick only the filter fields we surface — including `paginate` from
+        // ListModelsOptions confuses overload resolution between the array
+        // and paginated return shapes. Conditional spread also keeps undefined
+        // out of the object so exactOptionalPropertyTypes is happy.
+        type Filters = Pick<ListModelsOptions, 'capability' | 'category' | 'creator' | 'search'>
+        const opts: Filters = {}
+        if (typeof args.capability === 'string') { opts.capability = args.capability }
+        if (typeof args.category === 'string') {
+          opts.category = args.category as NonNullable<ListModelsOptions['category']>
+        }
+        if (typeof args.creator === 'string') { opts.creator = args.creator }
+        if (typeof args.search === 'string') { opts.search = args.search }
+        const models = await client.content.listModels(opts)
         const formatted = models.map((model) => {
           const headline = model.headline ? ` — ${model.headline}` : ''
           const caps = model.capabilities?.length ? ` [${model.capabilities.join(', ')}]` : ''
@@ -375,6 +459,80 @@ const handleToolCall = async (
           return `${model.name} (${model.air})${headline}${caps}${pricing}`
         }).join('\n')
         return { content: [{ type: 'text', text: `Curated models (${models.length}):\n\n${formatted}` }] }
+      }
+
+      case 'model_details': {
+        const air = args.air as string
+        const models = await client.content.listModels()
+        const model = models.find((entry) => entry.air === air)
+        if (!model) {
+          return {
+            content: [{ type: 'text', text: `No curated model found for AIR: ${air}` }],
+            isError: true,
+          }
+        }
+        return { content: [{ type: 'text', text: JSON.stringify(model, null, 2) }] }
+      }
+
+      case 'model_examples': {
+        const air = args.air as string
+        const capability = args.capability as string | undefined
+        const models = await client.content.listModels()
+        const model = models.find((entry) => entry.air === air)
+        if (!model) {
+          return {
+            content: [{ type: 'text', text: `No curated model found for AIR: ${air}` }],
+            isError: true,
+          }
+        }
+        const examples = await client.content.getModelExamples(
+          model.model,
+          capability ? { capability } : undefined,
+        )
+        if (examples.length === 0) {
+          return { content: [{ type: 'text', text: `No examples found for ${model.name} (${air})` }] }
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `Examples for ${model.name} (${air}):\n\n${JSON.stringify(examples, null, 2)}`,
+          }],
+        }
+      }
+
+      case 'model_pricing': {
+        const air = args.air as string
+        const models = await client.content.listModels()
+        const model = models.find((entry) => entry.air === air)
+        if (!model) {
+          return {
+            content: [{ type: 'text', text: `No curated model found for AIR: ${air}` }],
+            isError: true,
+          }
+        }
+        const pricing = await client.content.getModelPricing(model.model)
+        if (!pricing) {
+          return { content: [{ type: 'text', text: `No pricing info for ${model.name} (${air})` }] }
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `Pricing for ${model.name} (${air}):\n\n${JSON.stringify(pricing, null, 2)}`,
+          }],
+        }
+      }
+
+      case 'list_capabilities': {
+        const capabilities = await client.content.listCapabilities()
+        const formatted = capabilities
+          .map((capability) => `${capability.id.padEnd(28)} — ${capability.label}`)
+          .join('\n')
+        return {
+          content: [{
+            type: 'text',
+            text: `Available capabilities (${capabilities.length}):\n\n${formatted}`,
+          }],
+        }
       }
 
       default:

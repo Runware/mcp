@@ -77,7 +77,11 @@ You don't call these directly — the agent does, based on what you ask for.
 
 - `run` — execute any Runware inference task (image, video, audio, 3D, upscaling, captioning, etc.) on a given model
 - `model_schema` — fetch the parameter schema for a specific model
-- `list_models` — list Runware's official, curated model integrations
+- `list_models` — list Runware's official, curated model integrations (supports `capability`, `category`, `creator`, `search` filters)
+- `model_details` — get full metadata for a curated model by AIR
+- `model_examples` — get sample input/output pairs for a curated model
+- `model_pricing` — get pricing overview + per-configuration examples for a curated model
+- `list_capabilities` — list every model capability (e.g. `io:text-to-image`, `op:upscale`) with labels
 - `model_search` — search the community model catalog (Civitai fine-tunes, custom uploads)
 - `image_upload` — upload an image to use as input
 - `model_upload` — upload a custom model

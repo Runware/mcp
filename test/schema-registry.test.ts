@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeEach, afterEach,
 } from 'bun:test'
 
-import { getAvailableModels, getModelSchema, clearSchemaCache } from '../src/schema-registry'
+import { getModelSchema, clearSchemaCache } from '../src/schema-registry'
 
 const originalFetch = globalThis.fetch
 
@@ -13,70 +13,6 @@ describe('schema-registry live-fetch behavior', () => {
 
   afterEach(() => {
     globalThis.fetch = originalFetch
-  })
-
-  describe('getAvailableModels', () => {
-    it('returns curated models with metadata from the content service', async () => {
-      globalThis.fetch = (async (url: string) => {
-        if (url.includes('/models')) {
-          return new Response(JSON.stringify([
-            {
-              air: 'runware:101@1',
-              name: 'FLUX.1 dev',
-              headline: 'Open-weights flagship from Black Forest Labs',
-              capabilities: ['io:text-to-image'],
-              pricingOverview: '$0.0025 per megapixel',
-            },
-            {
-              air: 'bfl:1@1',
-              name: 'FLUX 1.1 Pro',
-              headline: 'Highest quality FLUX',
-              capabilities: ['io:text-to-image'],
-              pricingOverview: '$0.04 per image',
-            },
-          ]))
-        }
-        return new Response('not found', { status: 404 })
-      }) as any
-
-      const models = await getAvailableModels()
-      expect(models.map((model) => model.air)).toContain('runware:101@1')
-      expect(models.map((model) => model.air)).toContain('bfl:1@1')
-
-      expect(models[0]?.name).toBe('FLUX 1.1 Pro')
-      expect(models[1]?.name).toBe('FLUX.1 dev')
-      expect(models[0]?.capabilities).toContain('io:text-to-image')
-      expect(models[0]?.headline).toBe('Highest quality FLUX')
-      expect(models[0]?.pricingOverview).toBe('$0.04 per image')
-    })
-
-    it('returns empty list when fetch throws', async () => {
-      globalThis.fetch = (async () => { throw new Error('network down') }) as any
-      const models = await getAvailableModels()
-      expect(models).toEqual([])
-    })
-
-    it('returns empty list when fetch returns non-200', async () => {
-      globalThis.fetch = (async () => new Response('boom', { status: 500 })) as any
-      const models = await getAvailableModels()
-      expect(models).toEqual([])
-    })
-
-    it('caches successful results within the TTL window', async () => {
-      let calls = 0
-      globalThis.fetch = (async (url: string) => {
-        if (url.includes('/models')) {
-          calls += 1
-          return new Response(JSON.stringify([{ air: 'runware:101@1', name: 'FLUX.1 dev' }]))
-        }
-        return new Response('not found', { status: 404 })
-      }) as any
-
-      await getAvailableModels()
-      await getAvailableModels()
-      await getAvailableModels()
-      expect(calls).toBe(1)
-    })
   })
 
   describe('getModelSchema', () => {
