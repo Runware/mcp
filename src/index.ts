@@ -271,9 +271,9 @@ const tools = [
     name: 'model_details',
     description:
       'Get the full curated metadata for a single Runware model by AIR identifier — '
-      + 'name, headline, description, capabilities, pricing, and creator. Use this '
+      + 'name, headline, description, capabilities, creator, and cover image. Use this '
       + 'when the user wants more depth on a model already surfaced by list_models, '
-      + 'or to confirm an AIR matches what the user named.',
+      + 'or to confirm an AIR matches what the user named. For pricing, use model_pricing instead.',
     inputSchema: {
       type: 'object' as const,
       properties: {air: { type: 'string', description: 'Model AIR identifier (e.g. "runware:400@1")' }},
