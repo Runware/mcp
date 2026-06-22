@@ -324,14 +324,17 @@ const tools = [
 ]
 
 /**
- * Recursively coerce numeric strings to numbers and "true"/"false" to booleans.
- * The `run` tool's inputSchema declares only `model` with a type; everything
- * else comes via `additionalProperties: true`. MCP clients (Claude, Cursor)
- * serialize untyped props as strings, so "width": 1024 arrives here as "1024"
- * and the Runware API rejects it. Coerce at the boundary instead of enumerating
- * every param of every model in the schema. Recurses into nested objects and
- * arrays so model-specific shapes (e.g. `ipAdapters: [{ strength: "0.5" }]`)
- * get their inner values coerced too.
+ * Recursively coerce stringified params back to their real JSON types: numeric
+ * strings to numbers, "true"/"false" to booleans, and JSON-encoded arrays or
+ * objects (e.g. the LLM `messages` array) back into arrays and objects.
+ * The `run` tool's inputSchema declares only `model`, and every other param
+ * comes via `additionalProperties`. MCP clients (Claude, Cursor) serialize
+ * untyped props as strings, so "width": 1024 arrives here as "1024" and
+ * "messages": [...] arrives as the JSON string "[...]", both of which the
+ * Runware API rejects. Coerce at the boundary instead of enumerating every
+ * param of every model in the schema. Recurses into nested objects and arrays
+ * so model-specific shapes (e.g. `ipAdapters: [{ strength: "0.5" }]`) get their
+ * inner values coerced too.
  */
 const coerceTypes = (value: unknown): unknown => {
   if (typeof value === 'string') {
@@ -339,6 +342,16 @@ const coerceTypes = (value: unknown): unknown => {
     if (/^-?\d+\.\d+$/.test(value)) { return parseFloat(value) }
     if (value === 'true') { return true }
     if (value === 'false') { return false }
+    const trimmed = value.trim()
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        // JSON.parse already restores inner types, so return as-is rather than
+        // recursing: re-coercing would corrupt genuine string content such as an
+        // LLM message whose text is "123", "true", or a JSON snippet.
+        if (parsed !== null && typeof parsed === 'object') { return parsed }
+      } catch { /* not JSON, treat as a plain string */ }
+    }
     return value
   }
   if (Array.isArray(value)) {
