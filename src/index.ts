@@ -64,6 +64,7 @@ const log = (message: string, data?: unknown): void => {
 const tools = [
   {
     name: 'run',
+    annotations: { title: 'Run inference', readOnlyHint: false, destructiveHint: false },
     description:
       'Run an AI inference task on Runware. Supports image generation, video generation, '
       + 'audio generation, 3D generation, upscaling, background removal, captioning, and more. '
@@ -92,6 +93,7 @@ const tools = [
   },
   {
     name: 'model_search',
+    annotations: { title: 'Search models', readOnlyHint: true },
     description:
       'Search Runware\'s Civitai mirror and community-uploaded models — third-party '
       + 'fine-tunes, user uploads, style LoRAs, custom checkpoints. ONLY use this '
@@ -131,6 +133,7 @@ const tools = [
   },
   {
     name: 'image_upload',
+    annotations: { title: 'Upload image', readOnlyHint: false, destructiveHint: false },
     description:
       'Upload an image to Runware for use as input in subsequent generation tasks. '
       + 'Returns an image UUID that can be used as seedImage, maskImage, etc.',
@@ -147,6 +150,7 @@ const tools = [
   },
   {
     name: 'model_upload',
+    annotations: { title: 'Upload model', readOnlyHint: false, destructiveHint: false },
     description:
       'Upload a custom AI model to Runware (checkpoint, LoRA, VAE, embeddings, etc.). '
       + 'Returns the AIR identifier once the upload completes.',
@@ -187,6 +191,7 @@ const tools = [
   },
   {
     name: 'account',
+    annotations: { title: 'Account details', readOnlyHint: true },
     description: 'Retrieve Runware account information including balance and usage.',
     inputSchema: {
       type: 'object' as const,
@@ -206,6 +211,7 @@ const tools = [
   },
   {
     name: 'get_task_details',
+    annotations: { title: 'Get task details', readOnlyHint: true },
     description:
       'Retrieve the original request and response for a previously executed task. '
       + 'Useful for recovering results or auditing past generations.',
@@ -217,6 +223,7 @@ const tools = [
   },
   {
     name: 'model_schema',
+    annotations: { title: 'Model schema', readOnlyHint: true },
     description:
       'Get the parameter schema for a specific model. Returns the JSON Schema describing '
       + 'all accepted parameters, their types, defaults, and constraints. '
@@ -235,6 +242,7 @@ const tools = [
   },
   {
     name: 'list_models',
+    annotations: { title: 'List models', readOnlyHint: true },
     description:
       'List Runware\'s official, curated model integrations. Returns each model\'s '
       + 'name, AIR identifier, headline (one-line description), capabilities, and '
@@ -269,6 +277,7 @@ const tools = [
   },
   {
     name: 'model_details',
+    annotations: { title: 'Model details', readOnlyHint: true },
     description:
       'Get the full curated metadata for a single Runware model by AIR identifier — '
       + 'name, headline, description, capabilities, creator, and cover image. Use this '
@@ -282,6 +291,7 @@ const tools = [
   },
   {
     name: 'model_examples',
+    annotations: { title: 'Model examples', readOnlyHint: true },
     description:
       'Get sample input/output examples for a curated Runware model. Useful when the '
       + 'user wants to see what a model produces, or to crib a working request shape '
@@ -300,6 +310,7 @@ const tools = [
   },
   {
     name: 'model_pricing',
+    annotations: { title: 'Model pricing', readOnlyHint: true },
     description:
       'Get pricing details for a curated Runware model — overview text plus example '
       + 'configurations with prices (e.g. "1024×1024 = $0.0032"). Use this when the '
@@ -312,6 +323,7 @@ const tools = [
   },
   {
     name: 'list_capabilities',
+    annotations: { title: 'List capabilities', readOnlyHint: true },
     description:
       'List every model capability Runware supports, with their human-readable labels. '
       + 'Use this to discover the taxonomy (e.g. "io:text-to-image", "op:upscale") '
