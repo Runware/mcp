@@ -1,6 +1,6 @@
 {
   "name": "@runware/mcp",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "MCP server that gives AI agents (Claude, Cursor, Codex) access to the full Runware API — image, video, audio, text, and 3D generation, upscaling, background removal, and more.",
   "type": "module",
   "bin": {
@@ -10,8 +10,9 @@
     "dist"
   ],
   "scripts": {
+    "sync-version": "bun run scripts/sync-version.ts",
     "clean": "rm -rf dist",
-    "build": "bun run clean && tsc",
+    "build": "bun run clean && bun run scripts/sync-version.ts && tsc",
     "start": "node dist/index.js",
     "dev": "bun run src/index.ts",
     "test": "bun test",

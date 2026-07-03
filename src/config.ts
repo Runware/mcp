@@ -9,6 +9,8 @@
 
 import { createClient, type RunwareClient } from '@runware/sdk'
 
+import { MCP_VERSION } from './version'
+
 let client: RunwareClient | null = null
 
 export const getClient = async (): Promise<RunwareClient> => {
@@ -21,7 +23,7 @@ export const getClient = async (): Promise<RunwareClient> => {
     throw new Error(msg)
   }
 
-  client = await createClient({ apiKey })
+  client = await createClient({ apiKey, userAgentPrefix: `runware-mcp/${MCP_VERSION}` })
   await client.connect()
   return client
 }
