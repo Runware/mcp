@@ -1,6 +1,6 @@
 {
   "name": "@runware/mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "MCP server that gives AI agents (Claude, Cursor, Codex) access to the full Runware API — image, video, audio, text, and 3D generation, upscaling, background removal, and more.",
   "type": "module",
   "bin": {
@@ -45,7 +45,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@runware/sdk": "^1.5.0",
+    "@runware/sdk": "^1.5.3",
     "ajv": "^8.20.0",
     "ws": "^8.21.0",
     "zod": "^4.4.3"
@@ -53,8 +53,8 @@
   "devDependencies": {
     "@types/bun": "^1.3.14",
     "@types/node": "^26.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.62.1",
-    "@typescript-eslint/parser": "^8.62.1",
+    "@typescript-eslint/eslint-plugin": "^8.63.0",
+    "@typescript-eslint/parser": "^8.63.0",
     "eslint": "^10.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.32.0",
