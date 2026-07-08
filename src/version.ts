@@ -4,4 +4,4 @@
  * Do not edit by hand — it is regenerated on `build`. Used to identify this
  * server in the User-Agent sent to the Runware API.
  */
-export const MCP_VERSION = '1.2.1'
+export const MCP_VERSION = '1.2.2'
