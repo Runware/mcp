@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Runware/mcp",
+  "description": "Access the full Runware API as MCP tools: image, video, audio, 3D, and text.",
+  "repository": {
+    "url": "https://github.com/Runware/mcp",
+    "source": "github"
+  },
+  "version": "1.2.3",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@runware/mcp",
+      "version": "1.2.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "RUNWARE_API_KEY",
+          "description": "Your Runware API key. Create one at https://runware.ai.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
