@@ -6,7 +6,7 @@
       "name": "@runware/mcp",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
-        "@runware/sdk": "^1.5.5",
+        "@runware/sdk": "^1.6.5",
         "ajv": "^8.20.0",
         "ws": "^8.21.0",
         "zod": "^4.4.3",
@@ -19,9 +19,12 @@
         "eslint": "^10.6.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.32.0",
-        "typescript": "^6.0.3",
+        "typescript": "~6.0.3",
       },
     },
+  },
+  "overrides": {
+    "typescript": "~6.0.3",
   },
   "packages": {
     "@eslint-community/eslint-utils": ["@eslint-community/eslint-utils@4.9.1", "", { "dependencies": { "eslint-visitor-keys": "^3.4.3" }, "peerDependencies": { "eslint": "^6.0.0 || ^7.0.0 || >=8.0.0" } }, "sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ=="],
@@ -54,7 +57,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "", {}, "sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g=="],
 
-    "@runware/sdk": ["@runware/sdk@1.5.5", "", { "peerDependencies": { "ajv": "^8.0.0", "ws": "latest" }, "optionalPeers": ["ajv", "ws"] }, "sha512-B+xDA78U0v+g8m6ReYIY2pVlItVb36+Azpisuh0579wC+S7YCqSjTNucWnfTt3owAWgPN62EenWhHY29n4sFww=="],
+    "@runware/sdk": ["@runware/sdk@1.6.5", "", { "peerDependencies": { "ajv": "^8.0.0", "ws": "latest" }, "optionalPeers": ["ajv", "ws"] }, "sha512-0CZY7z6BTRIO+pwMXZB7YjjMO4qD8kXWqiB+YFEutpcuodmT74mdsXWHqfrNjHtOP2oryG40aXtRVEeE6KgYFQ=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
