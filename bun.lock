@@ -6,7 +6,7 @@
       "name": "@runware/mcp",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
-        "@runware/sdk": "^1.6.5",
+        "@runware/sdk": "^1.6.6",
         "ajv": "^8.20.0",
         "ws": "^8.21.0",
         "zod": "^4.4.3",
@@ -57,7 +57,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "", {}, "sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g=="],
 
-    "@runware/sdk": ["@runware/sdk@1.6.5", "", { "peerDependencies": { "ajv": "^8.0.0", "ws": "latest" }, "optionalPeers": ["ajv", "ws"] }, "sha512-0CZY7z6BTRIO+pwMXZB7YjjMO4qD8kXWqiB+YFEutpcuodmT74mdsXWHqfrNjHtOP2oryG40aXtRVEeE6KgYFQ=="],
+    "@runware/sdk": ["@runware/sdk@1.6.6", "", { "peerDependencies": { "ajv": "^8.0.0", "ws": "latest" }, "optionalPeers": ["ajv", "ws"] }, "sha512-8KDk4OG8q+8QzEYPkMy6QGj1n2QN6c3rqUiN1Onf3kuVnWC8QrQ3JOLlmaH0bI6Gx08xSMoaxMQkLKE+MRCxpw=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
