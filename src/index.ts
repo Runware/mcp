@@ -132,20 +132,26 @@ const tools = [
     },
   },
   {
-    name: 'image_upload',
-    annotations: { title: 'Upload image', readOnlyHint: false, destructiveHint: false },
+    name: 'media_storage',
+    annotations: { title: 'Media storage', readOnlyHint: false, destructiveHint: true },
     description:
-      'Upload an image to Runware for use as input in subsequent generation tasks. '
-      + 'Returns an image UUID that can be used as seedImage, maskImage, etc.',
+      'Store or delete media (images, video, audio, 3D models) in your Runware account. '
+      + 'Upload returns a media UUID you can reuse as input (seedImage, referenceImages, etc.); '
+      + 'delete removes previously stored media by its media UUID.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        image: {
+        operation: {
           type: 'string',
-          description: 'URL, data URI, or base64 of the image to upload',
+          enum: ['upload', 'delete'],
+          description: 'Whether to upload new media or delete stored media',
+        },
+        media: {
+          type: 'string',
+          description: 'For upload: URL, data URI, or base64 of the media. For delete: the media UUID to remove',
         },
       },
-      required: ['image'],
+      required: ['operation', 'media'],
     },
   },
   {
@@ -423,11 +429,12 @@ const handleToolCall = async (
         }
       }
 
-      case 'image_upload': {
-        const params = args as unknown as Parameters<typeof client.imageUpload>[0]
-        const results = await client.imageUpload(params)
+      case 'media_storage': {
+        const params = args as unknown as Parameters<typeof client.mediaStorage>[0]
+        const results = await client.mediaStorage(params)
         const result = (results as Record<string, unknown>[])[0]
-        return { content: [{ type: 'text', text: `Image uploaded:\n\n${JSON.stringify(result, null, 2)}` }] }
+        const verb = (params as { operation?: string }).operation === 'delete' ? 'deleted' : 'stored'
+        return { content: [{ type: 'text', text: `Media ${verb}:\n\n${JSON.stringify(result, null, 2)}` }] }
       }
 
       case 'model_upload': {

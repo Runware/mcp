@@ -83,7 +83,7 @@ You don't call these directly — the agent does, based on what you ask for.
 - `model_pricing` — get pricing overview + per-configuration examples for a curated model
 - `list_capabilities` — list every model capability (e.g. `io:text-to-image`, `op:upscale`) with labels
 - `model_search` — search the community model catalog (Civitai fine-tunes, custom uploads)
-- `image_upload` — upload an image to use as input
+- `media_storage` — store media (images, video, audio, 3D models) for use as input, or delete stored media
 - `model_upload` — upload a custom model
 - `account` — retrieve account information including balance and usage
 - `get_task_details` — retrieve the original request and response for a previous task
