@@ -9,7 +9,7 @@
 
 import { createClient, type RunwareClient } from '@runware/sdk'
 
-import { MCP_VERSION } from './version'
+import { MCP_VERSION } from './version.js'
 
 let client: RunwareClient | null = null
 
