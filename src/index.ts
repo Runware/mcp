@@ -118,7 +118,7 @@ const tools = [
         },
         type: {
           type: 'string',
-          enum: ['base', 'inpainting', 'refiner'],
+          enum: ['base', 'inpainting'],
           description: 'Filter checkpoints by type (only when category=checkpoint)',
         },
         architecture: { type: 'string', description: 'Filter by architecture (e.g. "flux-1-dev", "sdxl")' },
@@ -206,10 +206,6 @@ const tools = [
           type: 'string',
           enum: ['getDetails'],
           description: 'Which account operation to perform. Currently only "getDetails" is supported.',
-        },
-        includeCost: {
-          type: 'boolean',
-          description: 'Include cost information',
         },
       },
       required: ['operation'],
