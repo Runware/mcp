@@ -46,7 +46,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@runware/sdk": "^1.6.10",
+    "@runware/sdk": "^1.8.4",
     "ajv": "^8.20.0",
     "ws": "^8.21.3",
     "zod": "^4.5.4"
