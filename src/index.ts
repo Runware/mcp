@@ -61,10 +61,34 @@ const log = (message: string, data?: unknown): void => {
   process.stderr.write(line + '\n')
 }
 
+const INSTRUCTIONS = [
+  'Runware runs image, video, audio, 3D and text models through one API. Every model has an AIR '
+    + 'identifier of the form provider:model@version, such as runware:400@1.',
+  '',
+  'Workflow:',
+  '1. Find the model with list_models. Call it first whenever the user names a model or asks what is '
+    + 'available, and match the named model against the returned names. Filter by category, creator, '
+    + 'search or capability. list_capabilities lists the capability ids, and model_details returns '
+    + 'the full metadata of one model.',
+  '2. Call model_schema with the AIR before the first run with that model, and build the request '
+    + 'from the schema. model_examples returns working requests for curated models.',
+  '3. Call run with model set to the AIR plus the task parameters. Every result includes a taskUUID.',
+  '4. Call get_task_details with a taskUUID to recover the request and results of an earlier task.',
+  '',
+  'Use model_search only for Civitai or community models, such as LoRAs, fine-tunes and custom '
+    + 'checkpoints, after list_models has no match or when the user asks for one. Use model_pricing '
+    + 'when the user asks what a model costs.',
+].join('\n')
+
 const tools = [
   {
     name: 'run',
-    annotations: { title: 'Run inference', readOnlyHint: false, destructiveHint: false },
+    annotations: {
+      title: 'Run inference',
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    },
     description:
       'Run an AI inference task on Runware. Supports image generation, video generation, '
       + 'audio generation, 3D generation, upscaling, background removal, captioning, and more. '
@@ -93,7 +117,7 @@ const tools = [
   },
   {
     name: 'model_search',
-    annotations: { title: 'Search models', readOnlyHint: true },
+    annotations: { title: 'Search models', readOnlyHint: true, idempotentHint: true },
     description:
       'Search Runware\'s Civitai mirror and community-uploaded models — third-party '
       + 'fine-tunes, user uploads, style LoRAs, custom checkpoints. ONLY use this '
@@ -133,7 +157,12 @@ const tools = [
   },
   {
     name: 'media_storage',
-    annotations: { title: 'Media storage', readOnlyHint: false, destructiveHint: true },
+    annotations: {
+      title: 'Media storage',
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+    },
     description:
       'Store or delete media (images, video, audio, 3D models) in your Runware account. '
       + 'Upload returns a media UUID you can reuse as input (seedImage, referenceImages, etc.); '
@@ -156,7 +185,12 @@ const tools = [
   },
   {
     name: 'model_upload',
-    annotations: { title: 'Upload model', readOnlyHint: false, destructiveHint: false },
+    annotations: {
+      title: 'Upload model',
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    },
     description:
       'Upload a custom AI model to Runware (checkpoint, LoRA, VAE, embeddings, etc.). '
       + 'Returns the AIR identifier once the upload completes.',
@@ -197,7 +231,7 @@ const tools = [
   },
   {
     name: 'account',
-    annotations: { title: 'Account details', readOnlyHint: true },
+    annotations: { title: 'Account details', readOnlyHint: true, idempotentHint: true },
     description: 'Retrieve Runware account information including balance and usage.',
     inputSchema: {
       type: 'object' as const,
@@ -213,7 +247,7 @@ const tools = [
   },
   {
     name: 'get_task_details',
-    annotations: { title: 'Get task details', readOnlyHint: true },
+    annotations: { title: 'Get task details', readOnlyHint: true, idempotentHint: true },
     description:
       'Retrieve the original request and response for a previously executed task. '
       + 'Useful for recovering results or auditing past generations.',
@@ -225,7 +259,7 @@ const tools = [
   },
   {
     name: 'model_schema',
-    annotations: { title: 'Model schema', readOnlyHint: true },
+    annotations: { title: 'Model schema', readOnlyHint: true, idempotentHint: true },
     description:
       'Get the parameter schema for a specific model. Returns the JSON Schema describing '
       + 'all accepted parameters, their types, defaults, and constraints. '
@@ -244,7 +278,7 @@ const tools = [
   },
   {
     name: 'list_models',
-    annotations: { title: 'List models', readOnlyHint: true },
+    annotations: { title: 'List models', readOnlyHint: true, idempotentHint: true },
     description:
       'List Runware\'s official, curated model integrations. Returns each model\'s '
       + 'name, AIR identifier, headline (one-line description), capabilities, and '
@@ -279,7 +313,7 @@ const tools = [
   },
   {
     name: 'model_details',
-    annotations: { title: 'Model details', readOnlyHint: true },
+    annotations: { title: 'Model details', readOnlyHint: true, idempotentHint: true },
     description:
       'Get the full curated metadata for a single Runware model by AIR identifier — '
       + 'name, headline, description, capabilities, creator, and cover image. Use this '
@@ -293,7 +327,7 @@ const tools = [
   },
   {
     name: 'model_examples',
-    annotations: { title: 'Model examples', readOnlyHint: true },
+    annotations: { title: 'Model examples', readOnlyHint: true, idempotentHint: true },
     description:
       'Get sample input/output examples for a curated Runware model. Useful when the '
       + 'user wants to see what a model produces, or to crib a working request shape '
@@ -312,7 +346,7 @@ const tools = [
   },
   {
     name: 'model_pricing',
-    annotations: { title: 'Model pricing', readOnlyHint: true },
+    annotations: { title: 'Model pricing', readOnlyHint: true, idempotentHint: true },
     description:
       'Get pricing details for a curated Runware model — overview text plus example '
       + 'configurations with prices (e.g. "1024×1024 = $0.0032"). Use this when the '
@@ -325,7 +359,7 @@ const tools = [
   },
   {
     name: 'list_capabilities',
-    annotations: { title: 'List capabilities', readOnlyHint: true },
+    annotations: { title: 'List capabilities', readOnlyHint: true, idempotentHint: true },
     description:
       'List every model capability Runware supports, with their human-readable labels. '
       + 'Use this to discover the taxonomy (e.g. "io:text-to-image", "op:upscale") '
@@ -581,7 +615,7 @@ const handleToolCall = async (
 // passthrough. The deprecation note itself allows Server for advanced cases.
 const server = new Server(
   { name: 'runware', version: '1.0.0' },
-  { capabilities: { tools: {} } },
+  { capabilities: { tools: {} }, instructions: INSTRUCTIONS },
 )
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
