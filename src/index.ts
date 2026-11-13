@@ -99,7 +99,7 @@ const tools = [
       properties: {
         model: {
           type: 'string',
-          description: 'Model AIR identifier (e.g., "runware:400@1" for image, "google:3@3" for video, "google:gemma@4-31b" for LLM)',
+          description: 'Model AIR identifier (e.g., "runware:400@1" for image, "google:3@3" for video)',
         },
       },
       required: ['model'],
@@ -124,7 +124,7 @@ const tools = [
       + 'AFTER list_models has been checked and the user\'s named model is not in the '
       + 'curated catalog, OR when the user explicitly asks for a Civitai or community '
       + 'model. Do NOT use this for first-party models like FLUX, SDXL, Veo, Imagen, '
-      + 'Gemma, Wan, Z-Image — those live in list_models.',
+      + 'Wan, Z-Image — those live in list_models.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -270,7 +270,7 @@ const tools = [
       properties: {
         model: {
           type: 'string',
-          description: 'Model AIR identifier (e.g., "runware:400@1", "google:3@3", "google:gemma@4-31b")',
+          description: 'Model AIR identifier (e.g., "runware:400@1", "google:3@3")',
         },
       },
       required: ['model'],
@@ -284,7 +284,7 @@ const tools = [
       + 'name, AIR identifier, headline (one-line description), capabilities, and '
       + 'pricing — a human-readable catalog. '
       + 'Call this FIRST whenever the user names or asks about a model that could '
-      + 'be first-party (e.g. "FLUX 2 dev", "SDXL", "Veo 3", "Gemma", "Wan 2.5", '
+      + 'be first-party (e.g. "FLUX 2 dev", "SDXL", "Veo 3", "Wan 2.5", '
       + '"Z-Image"), and also for open-ended "what models are available?" questions. '
       + 'Match the user\'s named model against the returned names. '
       + 'Only fall through to model_search if no curated entry matches.',
