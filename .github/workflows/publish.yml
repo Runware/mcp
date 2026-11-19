@@ -37,3 +37,35 @@ jobs:
       - run: bun run build
 
       - run: npm publish --access public
+
+  github-release:
+    # After npm, never before: a release announcing a version that failed to
+    # publish points at nothing installable. Its own job so the publishing job
+    # keeps read-only contents, and outside the npm environment, which only
+    # exists to gate the trusted publisher.
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Create the release from the changelog
+        # test/changelog.test.ts has already failed the run if the tag's section
+        # is missing, so this reads what that test proved is there.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          notes=$(bun run scripts/changelog-section.ts "${TAG#v}")
+          # Idempotent, so re-running the workflow after a flake is safe: a
+          # release that already exists is updated rather than failing the run.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            printf '%s\n' "$notes" | gh release edit "$TAG" --notes-file -
+          else
+            printf '%s\n' "$notes" | gh release create "$TAG" --title "$TAG" --notes-file -
+          fi
