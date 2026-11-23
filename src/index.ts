@@ -34,6 +34,7 @@ import {
 import { isRunwareError, type ListModelsOptions } from '@runware/sdk'
 import { getClient, disconnectClient } from './config.js'
 import { formatResults } from './formatters.js'
+import { startingPrice } from './pricing.js'
 import { getModelSchema } from './schema-registry.js'
 
 type ToolResponse = {
@@ -517,7 +518,8 @@ const handleToolCall = async (
         const formatted = models.map((model) => {
           const headline = model.headline ? ` — ${model.headline}` : ''
           const caps = model.capabilities?.length ? ` [${model.capabilities.join(', ')}]` : ''
-          const pricing = model.pricingOverview ? ` — ${model.pricingOverview}` : ''
+          const price = startingPrice(model)
+          const pricing = price ? ` — ${price}` : ''
           return `${model.name} (${model.air})${headline}${caps}${pricing}`
         }).join('\n')
         return { content: [{ type: 'text', text: `Curated models (${models.length}):\n\n${formatted}` }] }
